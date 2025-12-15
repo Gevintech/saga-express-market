@@ -77,7 +77,7 @@ const Auth = () => {
             <ArrowLeft className="w-5 h-5 text-primary-foreground" />
           </button>
           <h1 className="text-xl font-bold text-primary-foreground">
-            Saga Express
+            KeKKel Store
           </h1>
         </div>
       </header>
@@ -90,7 +90,7 @@ const Auth = () => {
           <p className="text-muted-foreground mb-6">
             {isLogin 
               ? "Sign in to access your account" 
-              : "Join Saga Express Market today"}
+              : "Join KeKKel Store today"}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

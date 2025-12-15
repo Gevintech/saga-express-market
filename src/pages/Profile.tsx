@@ -1,15 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings, DollarSign, FileText, Bell, Users, MessageCircle, HelpCircle, LogOut, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, FileText, Bell, Users, MessageCircle, HelpCircle, LogOut, User as UserIcon, Edit, Shield, Phone } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useProfile } from "@/hooks/useProfile";
+import { useIsAdmin } from "@/hooks/useAdmin";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut, loading } = useAuth();
+  const { data: profile } = useProfile();
+  const { data: isAdmin } = useIsAdmin();
 
   const menuItems = [
-    { icon: DollarSign, label: "Make money", color: "text-yellow-500", path: "#" },
+    { icon: Edit, label: "Edit Profile", path: "/edit-profile" },
     { icon: FileText, label: "My adverts", path: "/my-adverts" },
     { icon: Bell, label: "Notifications", path: "#" },
     { icon: Users, label: "Followers", path: "#" },
@@ -64,13 +68,17 @@ const Profile = () => {
             <button onClick={() => navigate(-1)} className="p-2 -ml-2">
               <ArrowLeft className="w-5 h-5 text-primary" />
             </button>
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-medium">
-                {user.email?.charAt(0).toUpperCase()}
-              </span>
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-primary-foreground font-medium">
+                  {user.email?.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
             <div>
-              <span className="font-medium block">{user.user_metadata?.full_name || "User"}</span>
+              <span className="font-medium block">{profile?.full_name || user.user_metadata?.full_name || "User"}</span>
               <span className="text-xs text-muted-foreground">{user.email}</span>
             </div>
           </div>
@@ -92,21 +100,41 @@ const Profile = () => {
                 onClick={() => item.path !== "#" && navigate(item.path)}
                 className="bg-card rounded-xl p-4 flex items-center gap-3 shadow-card hover:shadow-card-hover transition-shadow"
               >
-                <Icon className={`w-6 h-6 ${item.color || 'text-foreground'}`} />
+                <Icon className="w-6 h-6 text-foreground" />
                 <span className="font-medium text-sm">{item.label}</span>
               </button>
             );
           })}
         </div>
 
+        {/* Admin Dashboard Button */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/admin')}
+            className="w-full mt-3 bg-primary rounded-xl p-4 flex items-center gap-3 shadow-card"
+          >
+            <Shield className="w-6 h-6 text-primary-foreground" />
+            <span className="font-medium text-sm text-primary-foreground">Admin Dashboard</span>
+          </button>
+        )}
+
         {/* Sign Out */}
         <button
           onClick={signOut}
-          className="w-full mt-4 bg-card rounded-xl p-4 flex items-center gap-3 shadow-card hover:shadow-card-hover transition-shadow text-destructive"
+          className="w-full mt-3 bg-card rounded-xl p-4 flex items-center gap-3 shadow-card hover:shadow-card-hover transition-shadow text-destructive"
         >
           <LogOut className="w-6 h-6" />
           <span className="font-medium text-sm">Sign Out</span>
         </button>
+
+        {/* Customer Support */}
+        <div className="mt-6 p-4 bg-muted rounded-xl">
+          <p className="text-sm text-muted-foreground mb-1">Customer Support</p>
+          <a href="tel:+256755842484" className="flex items-center gap-2 text-primary font-medium">
+            <Phone className="w-4 h-4" />
+            +256 755 842 484
+          </a>
+        </div>
       </div>
 
       <BottomNav />

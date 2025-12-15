@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Search, User, MessageSquare, ChevronDown, LogIn } from "lucide-react";
+import { Search, User, MessageSquare, ChevronDown, LogIn, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useAdmin";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ interface HeaderProps {
 
 export const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
   const { user, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [query, setQuery] = useState(searchQuery);
 
@@ -32,7 +34,7 @@ export const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
         <div className="flex items-center justify-between gap-4">
           <Link to="/" className="flex-shrink-0">
             <h1 className="text-xl font-bold text-primary-foreground tracking-tight">
-              Saga Express
+              KeKKel Store
             </h1>
           </Link>
           
@@ -59,6 +61,12 @@ export const Header = ({ onSearch, searchQuery = "" }: HeaderProps) => {
                   <DropdownMenuItem onClick={() => navigate('/saved')}>
                     Saved Items
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => signOut()}>
                     Sign Out
                   </DropdownMenuItem>

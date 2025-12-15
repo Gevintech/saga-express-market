@@ -8,14 +8,19 @@ import { BottomNav } from "@/components/BottomNav";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const isSearching = searchQuery.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <Header onSearch={setSearchQuery} searchQuery={searchQuery} />
       <main>
-        <HeroCards />
-        <CategoryGrid />
-        <RecommendedCategories />
+        {!isSearching && (
+          <>
+            <HeroCards />
+            <CategoryGrid />
+            <RecommendedCategories />
+          </>
+        )}
         <TrendingAds searchQuery={searchQuery} />
       </main>
       <BottomNav />
