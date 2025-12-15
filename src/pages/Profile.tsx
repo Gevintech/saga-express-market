@@ -1,24 +1,26 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings, DollarSign, FileText, Bell, Users, MessageCircle, HelpCircle, LogOut, User as UserIcon, Edit, Shield, Phone } from "lucide-react";
+import { ArrowLeft, Settings, FileText, Bell, Users, MessageCircle, HelpCircle, LogOut, User as UserIcon, Edit, Shield, Phone } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { useIsAdmin } from "@/hooks/useAdmin";
+import { useUnreadCount } from "@/hooks/useNotifications";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut, loading } = useAuth();
   const { data: profile } = useProfile();
   const { data: isAdmin } = useIsAdmin();
+  const { data: unreadCount } = useUnreadCount();
 
   const menuItems = [
-    { icon: Edit, label: "Edit Profile", path: "/edit-profile" },
-    { icon: FileText, label: "My adverts", path: "/my-adverts" },
-    { icon: Bell, label: "Notifications", path: "#" },
-    { icon: Users, label: "Followers", path: "#" },
-    { icon: MessageCircle, label: "Feedback", path: "#" },
-    { icon: HelpCircle, label: "FAQ", path: "#" },
+    { icon: Edit, label: "Edit Profile", path: "/edit-profile", badge: 0 },
+    { icon: FileText, label: "My adverts", path: "/my-adverts", badge: 0 },
+    { icon: Bell, label: "Notifications", path: "/notifications", badge: unreadCount || 0 },
+    { icon: Users, label: "Followers", path: "#", badge: 0 },
+    { icon: MessageCircle, label: "Feedback", path: "#", badge: 0 },
+    { icon: HelpCircle, label: "FAQ", path: "#", badge: 0 },
   ];
 
   if (loading) {
@@ -98,10 +100,15 @@ const Profile = () => {
               <button
                 key={item.label}
                 onClick={() => item.path !== "#" && navigate(item.path)}
-                className="bg-card rounded-xl p-4 flex items-center gap-3 shadow-card hover:shadow-card-hover transition-shadow"
+                className="bg-card rounded-xl p-4 flex items-center gap-3 shadow-card hover:shadow-card-hover transition-shadow relative"
               >
                 <Icon className="w-6 h-6 text-foreground" />
                 <span className="font-medium text-sm">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {item.badge > 9 ? "9+" : item.badge}
+                  </span>
+                )}
               </button>
             );
           })}

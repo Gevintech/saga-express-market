@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, ChevronRight, X, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,8 @@ import { useCreateListing } from "@/hooks/useListings";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { categories } from "@/data/categories";
 import { toast } from "sonner";
+import { PromotionSelector, promotionOptions } from "@/components/PromotionSelector";
+import { PaymentModal } from "@/components/PaymentModal";
 import {
   Select,
   SelectContent,
@@ -54,8 +56,12 @@ const PostAd = () => {
   const [negotiable, setNegotiable] = useState("not-sure");
   const [images, setImages] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedPromotion, setSelectedPromotion] = useState("none");
+  const [showPayment, setShowPayment] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   const selectedLocation = locations.find(l => l.name === location);
+  const selectedPromotionOption = promotionOptions.find(p => p.id === selectedPromotion);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -69,7 +75,6 @@ const PostAd = () => {
 
     setImages(prev => [...prev, ...newFiles]);
     
-    // Create preview URLs
     newFiles.forEach(file => {
       const url = URL.createObjectURL(file);
       setImageUrls(prev => [...prev, url]);
@@ -93,27 +98,44 @@ const PostAd = () => {
     setNegotiable("not-sure");
     setImages([]);
     setImageUrls([]);
+    setSelectedPromotion("none");
   };
 
-  const handleSubmit = async () => {
+  const validateForm = () => {
     if (!user) {
       toast.error("Please sign in to post an ad");
       navigate("/auth");
-      return;
+      return false;
     }
 
     if (!title || !price || !category || !condition || !location || !region) {
       toast.error("Please fill in all required fields");
-      return;
+      return false;
     }
 
     if (images.length < 1) {
       toast.error("Please add at least 1 photo");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    // If promotion selected and costs money, show payment
+    if (selectedPromotion !== "none" && selectedPromotionOption && selectedPromotionOption.price > 0) {
+      setPendingSubmit(true);
+      setShowPayment(true);
       return;
     }
 
+    await submitListing(false);
+  };
+
+  const submitListing = async (isPromoted: boolean) => {
     try {
-      // Upload images
       const uploadedUrls = await uploadMultipleImages(images);
       
       if (uploadedUrls.length === 0) {
@@ -121,9 +143,8 @@ const PostAd = () => {
         return;
       }
 
-      // Create listing
       await createListing.mutateAsync({
-        user_id: user.id,
+        user_id: user!.id,
         title,
         description: description || null,
         price: parseInt(price),
@@ -134,18 +155,25 @@ const PostAd = () => {
         region,
         phone: phone || null,
         is_negotiable: negotiable === "yes" ? true : negotiable === "no" ? false : null,
+        is_promoted: isPromoted,
+        is_featured: selectedPromotion === "boost",
         images: uploadedUrls,
       });
 
+      toast.success("Ad posted successfully!");
       navigate("/my-adverts");
     } catch (error) {
       console.error("Error creating listing:", error);
     }
   };
 
+  const handlePaymentSuccess = () => {
+    setPendingSubmit(false);
+    submitListing(true);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
       <header className="bg-card sticky top-0 z-50 border-b border-border">
         <div className="container py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -161,7 +189,7 @@ const PostAd = () => {
       </header>
 
       <main className="container py-4 space-y-6">
-        {/* Title */}
+        {/* Title & Category */}
         <div className="bg-card rounded-xl p-4">
           <div className="text-right text-sm text-muted-foreground mb-2">
             {title.length} / 70
@@ -176,7 +204,6 @@ const PostAd = () => {
             <p className="text-xs text-destructive mt-1">This field is required.</p>
           )}
 
-          {/* Category */}
           <div className="mt-4">
             <Label className="text-muted-foreground text-xs">Category*</Label>
             <Select value={category} onValueChange={setCategory}>
@@ -293,7 +320,6 @@ const PostAd = () => {
             </Select>
           </div>
 
-          {/* Description */}
           <div>
             <div className="text-right text-sm text-muted-foreground mb-1">
               {description.length} / 850
@@ -306,7 +332,6 @@ const PostAd = () => {
             />
           </div>
 
-          {/* Price */}
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground font-medium">USh</span>
             <Input
@@ -318,7 +343,6 @@ const PostAd = () => {
             />
           </div>
 
-          {/* Negotiable */}
           <div>
             <Label className="font-medium mb-3 block">Are you open to negotiation?</Label>
             <RadioGroup value={negotiable} onValueChange={setNegotiable} className="flex gap-4">
@@ -341,6 +365,14 @@ const PostAd = () => {
             placeholder="Your phone number" 
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
+
+        {/* Promotion Options */}
+        <div className="bg-card rounded-xl p-4">
+          <PromotionSelector 
+            selectedPromotion={selectedPromotion}
+            onSelect={setSelectedPromotion}
           />
         </div>
 
@@ -367,6 +399,19 @@ const PostAd = () => {
           </p>
         </div>
       </main>
+
+      {showPayment && selectedPromotionOption && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={() => {
+            setShowPayment(false);
+            setPendingSubmit(false);
+          }}
+          amount={selectedPromotionOption.price}
+          promotionName={`${selectedPromotionOption.name} - ${selectedPromotionOption.duration}`}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
 
       <BottomNav />
     </div>

@@ -16,6 +16,7 @@ import Category from "./pages/Category";
 import Auth from "./pages/Auth";
 import MyAdverts from "./pages/MyAdverts";
 import AdminDashboard from "./pages/AdminDashboard";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/saved" element={<Saved />} />
             <Route path="/category/:id" element={<Category />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
