@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { HeroCards } from "@/components/HeroCards";
 import { CategoryGrid } from "@/components/CategoryGrid";
@@ -6,14 +7,16 @@ import { TrendingAds } from "@/components/TrendingAds";
 import { BottomNav } from "@/components/BottomNav";
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header />
+      <Header onSearch={setSearchQuery} searchQuery={searchQuery} />
       <main>
         <HeroCards />
         <CategoryGrid />
         <RecommendedCategories />
-        <TrendingAds />
+        <TrendingAds searchQuery={searchQuery} />
       </main>
       <BottomNav />
     </div>
