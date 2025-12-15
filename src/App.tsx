@@ -8,12 +8,14 @@ import Index from "./pages/Index";
 import ListingDetail from "./pages/ListingDetail";
 import PostAd from "./pages/PostAd";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import Saved from "./pages/Saved";
 import Category from "./pages/Category";
 import Auth from "./pages/Auth";
 import MyAdverts from "./pages/MyAdverts";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,11 +33,13 @@ const App = () => (
             <Route path="/listing/:id" element={<ListingDetail />} />
             <Route path="/post-ad" element={<PostAd />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/my-adverts" element={<MyAdverts />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/saved" element={<Saved />} />
             <Route path="/category/:id" element={<Category />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
